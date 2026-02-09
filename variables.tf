@@ -8,12 +8,12 @@ variable "aws_region" {
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t2.micro"
+  default     = "t3.micro"
 }
 
 variable "ssh_public_key_path" {
   description = "Path to your SSH public key"
   type        = string
-  default     = "C:\\Users\\00015840.RFHL\\.ssh\\id_rsa"
+  default     = "C:\\Users\\00015840.RFHL\\.ssh\\id_rsa.pub"
 
 }

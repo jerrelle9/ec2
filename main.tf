@@ -139,7 +139,7 @@ resource "aws_instance" "web" {
                 EOF
 
   root_block_device {
-    volume_size = 8
+    volume_size = 40
     volume_type = "gp3"
   }
 
