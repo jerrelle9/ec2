@@ -1,0 +1,102 @@
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files contain sensitive data about your infrastructure
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all .tfvars files, which likely contain sensitive data like passwords,
+# API keys, or other secrets. Never commit these!
+*.tfvars
+*.tfvars.json
+
+# Ignore override files as they are usually used to override resources locally
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Include tfplan files to ignore the plan output
+*tfplan*
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore lock file (some teams commit this, some don't - your choice)
+# Uncomment the line below if you want to commit the lock file
+# !.terraform.lock.hcl
+.terraform.lock.hcl
+
+# SSH keys - NEVER commit private keys!
+*.pem
+*.pub
+id_rsa
+id_rsa.pub
+*.key
+
+# AWS credentials - NEVER commit these!
+*credentials*
+*secrets*
+.aws/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+terraform-debug.log
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Python (if using Python scripts with Terraform)
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+
+# Node modules (if using any JS tools)
+node_modules/
+
+# Terraform plugin cache
+.terraform.d/
+
+# Test files
+test/
+tests/
+
+# Documentation build outputs
+_site/
+.sass-cache/
