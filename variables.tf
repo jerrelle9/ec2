@@ -10,10 +10,3 @@ variable "instance_type" {
   type        = string
   default     = "t3.micro"
 }
-
-variable "ssh_public_key_path" {
-  description = "Path to your SSH public key"
-  type        = string
-  default     = "C:\\Users\\00015840.RFHL\\.ssh\\id_rsa.pub"
-
-}

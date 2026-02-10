@@ -18,28 +18,6 @@ output "instance_id" {
   value       = aws_instance.web.id
 }
 
-# output "instance_public_id" {
-#   description = "Public IP address of the EC2 instance"
-#   value       = aws_instance.web.public_ip
-# }
-
-
-# output "instance_public_dns" {
-#   description = "Public DNS name of the EC2 instance"
-#   value       = aws_instance.web.public_dns
-# }
-
-# output "ssh_command" {
-#   description = "Command to SSH into the instance"
-#   value       = "ssh -i ~/.ssh/id_rsa ec2-user@${aws_instance.web.public_ip}"
-# }
-
-# output "web_url" {
-#   description = "URL to access the web server"
-#   value       = "http://${aws_instance.web.public_ip}"
-# }
-
-
 output "session_manager_instructions" {
   value = "Connect using AWS Console -> EC2 -> Instance -> Connect -> Session Manager"
 }

@@ -54,7 +54,7 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private.id
 }
 
-#security Group
+#security group for EC2
 resource "aws_security_group" "ec2_sg" {
   name        = "terraform-ec2-sg"
   description = "Security group for EC2 instance"
@@ -75,6 +75,7 @@ resource "aws_security_group" "ec2_sg" {
   }
 }
 
+# security group for VPC
 resource "aws_security_group" "vpc_endpoint_sg" {
   name = "vpc-endpoint-sg"
   description = "Security group for VPC endpoints"
