@@ -26,49 +26,32 @@ resource "aws_vpc" "main" {
   }
 }
 
-# Internet gateway
-resource "aws_internet_gateway" "main" {
-  vpc_id = aws_vpc.main.id
-
-  tags = {
-    Name        = "terraform-igw"
-    Environment = "dev"
-  }
-}
-
 #Subnet
-resource "aws_subnet" "public" {
+resource "aws_subnet" "private" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = data.aws_availability_zones.available.names[0]
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   tags = {
-    Name        = "terraform-public-subnet"
+    Name        = "terraform-private-subnet"
     Environment = "dev"
   }
 }
 
-
-#Route Table config
-resource "aws_route_table" "public" {
+resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.main.id
-  }
-
   tags = {
-    Name        = "terraform-public-rt"
+    Name = "terraform-private-rt"
     Environment = "dev"
   }
 }
 
 #link subnet to route Table
-resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
-  route_table_id = aws_route_table.public.id
+resource "aws_route_table_association" "private" {
+  subnet_id      = aws_subnet.private.id
+  route_table_id = aws_route_table.private.id
 }
 
 #security Group
@@ -76,25 +59,6 @@ resource "aws_security_group" "ec2_sg" {
   name        = "terraform-ec2-sg"
   description = "Security group for EC2 instance"
   vpc_id      = aws_vpc.main.id
-
-
-  #SSH connection
-  # ingress {
-  #   description = "SSH access"
-  #   from_port   = 22
-  #   to_port     = 22
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
-
-  #HTTP
-  ingress {
-    description = "HTTP access"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
   #outbound traffic
   egress {
@@ -111,10 +75,24 @@ resource "aws_security_group" "ec2_sg" {
   }
 }
 
-# Key Pair - for SSH access
-resource "aws_key_pair" "ec2_key" {
-  key_name   = "terraform-ec2-key"
-  public_key = file(var.ssh_public_key_path)
+resource "aws_security_group" "vpc_endpoint_sg" {
+  name = "vpc-endpoint-sg"
+  description = "Security group for VPC endpoints"
+  vpc_id = aws_vpc.main.id
+
+  ingress{
+    description = "HTTPS from VPC"
+    from_port = 443
+    to_port = 443
+    protocol = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  tags = {
+    Name = "vpc-endpoint-sg"
+    Environment = "dev"
+  }
+  
 }
 
 #EC2 Instance -  virtual server
@@ -123,9 +101,9 @@ resource "aws_instance" "web" {
   instance_type = var.instance_type
 
   #move ec2 into vpc subnet
-  subnet_id                   = aws_subnet.public.id
+  subnet_id                   = aws_subnet.private.id
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
-  key_name                    = aws_key_pair.ec2_key.key_name
+  # key_name                    = aws_key_pair.ec2_key.key_name
   associate_public_ip_address = false
 
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
@@ -135,10 +113,7 @@ resource "aws_instance" "web" {
   user_data = <<-EOF
                 #!/bin/bash
                 yum update -y
-                yum install -y httpd
-                systemctl start httpd
-                systemctl enable httpd
-                echo "<h1> Hello from Terraform EC2! </h1>" > /var/www/html/index.html
+                echo "Instance provisioned successfully" > /tmp/status.txt
                 EOF
 
   root_block_device {
@@ -181,4 +156,47 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 }
 
 
+# VPC Endpoint for SSM
+resource "aws_vpc_endpoint" "ssm" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.aws_region}.ssm"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private.id]
+  security_group_ids  = [aws_security_group.vpc_endpoint_sg.id]
+  private_dns_enabled = true
 
+  tags = {
+    Name        = "ssm-endpoint"
+    Environment = "dev"
+  }
+}
+
+# VPC Endpoint for SSM Messages
+resource "aws_vpc_endpoint" "ssmmessages" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.aws_region}.ssmmessages"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private.id]
+  security_group_ids  = [aws_security_group.vpc_endpoint_sg.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name        = "ssmmessages-endpoint"
+    Environment = "dev"
+  }
+}
+
+# VPC Endpoint for EC2 Messages
+resource "aws_vpc_endpoint" "ec2messages" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.aws_region}.ec2messages"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private.id]
+  security_group_ids  = [aws_security_group.vpc_endpoint_sg.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name        = "ec2messages-endpoint"
+    Environment = "dev"
+  }
+}
